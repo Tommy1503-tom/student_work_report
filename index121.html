@@ -1,0 +1,1329 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ระบบบันทึกข้อมูลนักศึกษา</title>
+  <style>
+    :root {
+      --primary: #176b87;
+      --primary-dark: #0e4f66;
+      --success: #198754;
+      --danger: #dc3545;
+      --warning: #f0a500;
+      --bg: #f4f7fb;
+      --text: #1d2939;
+      --muted: #667085;
+      --border: #d9e2ec;
+      --card: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Tahoma, "Noto Sans Thai", Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary), #2489a8);
+      color: #fff;
+      padding: 24px 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.12);
+    }
+
+    header .header-inner {
+      max-width: 1280px;
+      margin: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    h1 { margin: 0; font-size: clamp(22px, 3vw, 30px); }
+    header p { margin: 6px 0 0; opacity: .9; }
+
+    .container {
+      max-width: 1280px;
+      margin: 24px auto;
+      padding: 0 20px 40px;
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .tab-btn, button {
+      border: 0;
+      border-radius: 8px;
+      cursor: pointer;
+      padding: 10px 14px;
+      font: inherit;
+      transition: .2s;
+    }
+
+    .tab-btn {
+      background: #e4edf2;
+      color: var(--text);
+      font-weight: bold;
+    }
+
+    .tab-btn.active, .tab-btn:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 18px;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(16, 24, 40, .08);
+      border: 1px solid #edf1f5;
+    }
+
+    .form-card { grid-column: span 4; }
+    .table-card { grid-column: span 8; }
+    .full { grid-column: 1 / -1; }
+
+    h2 {
+      font-size: 20px;
+      margin: 0 0 16px;
+      color: var(--primary-dark);
+    }
+
+    h3 {
+      margin: 0 0 12px;
+      font-size: 17px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group.full-width { grid-column: 1 / -1; }
+
+    label {
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px 11px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      font: inherit;
+      background: #fff;
+    }
+
+    input:focus, select:focus {
+      outline: 2px solid #a6d7e7;
+      border-color: var(--primary);
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    button {
+      background: var(--primary);
+      color: #fff;
+      font-weight: bold;
+    }
+
+    button:hover { filter: brightness(.92); }
+    .btn-success { background: var(--success); }
+    .btn-danger { background: var(--danger); }
+    .btn-warning { background: var(--warning); color: #1d2939; }
+    .btn-secondary { background: #64748b; }
+    .btn-small { padding: 6px 9px; font-size: 13px; }
+
+    .table-wrap {
+      overflow-x: auto;
+      max-height: 520px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 750px;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #e8edf2;
+      font-size: 14px;
+    }
+
+    th {
+      background: #eef7fa;
+      color: var(--primary-dark);
+      position: sticky;
+      top: 0;
+    }
+
+    tr:hover td { background: #fafcfd; }
+    .empty { text-align: center; color: var(--muted); padding: 24px !important; }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .stat {
+      border-radius: 12px;
+      padding: 18px;
+      color: #fff;
+      min-height: 115px;
+    }
+
+    .stat .label { font-size: 14px; opacity: .92; }
+    .stat .number { font-size: 32px; font-weight: bold; margin-top: 8px; }
+    .stat-blue { background: linear-gradient(135deg, #176b87, #2a9dba); }
+    .stat-green { background: linear-gradient(135deg, #177c4b, #2cac6f); }
+    .stat-orange { background: linear-gradient(135deg, #c57c00, #f0a500); }
+    .stat-purple { background: linear-gradient(135deg, #6644a8, #9672df); }
+    .stat-male { background: linear-gradient(135deg, #2563eb, #60a5fa); }
+    .stat-female { background: linear-gradient(135deg, #db2777, #f472b6); }
+    .gender-badge { display:inline-block; padding:4px 9px; border-radius:999px; font-size:12px; font-weight:bold; }
+    .gender-male { background:#dbeafe; color:#1d4ed8; }
+    .gender-female { background:#fce7f3; color:#be185d; }
+    .gender-unknown { background:#eef2f7; color:#64748b; }
+
+    .filter-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      align-items: end;
+    }
+
+    .chart-box {
+      min-height: 350px;
+      overflow-x: auto;
+    }
+
+    #chart {
+      width: 100%;
+      min-width: 650px;
+      height: 350px;
+      display: block;
+    }
+
+    .notice {
+      display: none;
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: 8px;
+      box-shadow: 0 4px 14px rgba(0,0,0,.18);
+      z-index: 20;
+    }
+
+    .notice.success { background: var(--success); }
+    .notice.error { background: var(--danger); }
+
+    .muted { color: var(--muted); font-size: 14px; }
+
+    @media (max-width: 900px) {
+      .form-card, .table-card { grid-column: 1 / -1; }
+      .summary-grid { grid-template-columns: repeat(2, 1fr); }
+      .filter-row { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 560px) {
+      .form-grid, .filter-row { grid-template-columns: 1fr; }
+      .summary-grid { grid-template-columns: 1fr; }
+      header .header-inner { align-items: flex-start; flex-direction: column; }
+    }
+
+    @media print {
+      body { background: #fff; }
+      header { box-shadow: none; padding: 10px; }
+      .tabs, .no-print, .form-card, .notice { display: none !important; }
+      .container { margin: 0; padding: 10px; max-width: none; }
+      .tab-content { display: none !important; }
+      #report.tab-content { display: block !important; }
+      .card { box-shadow: none; border: 1px solid #bbb; break-inside: avoid; }
+      .summary-grid { grid-template-columns: repeat(3, 1fr); }
+      .stat { color: #111; border: 1px solid #aaa; background: #fff !important; min-height: auto; }
+      #chart { height: 330px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div>
+        <h1>ระบบบันทึกข้อมูลนักศึกษา</h1>
+        <p>จัดเก็บรายชื่อนักศึกษา ผลสำเร็จการศึกษา การมีงานทำ และการนำความรู้ไปใช้</p>
+      </div>
+      <button class="btn-secondary no-print" onclick="printReport()">🖨️ พิมพ์รายงาน</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <nav class="tabs no-print">
+      <button class="tab-btn active" data-tab="students">รายชื่อนักศึกษา</button>
+      <button class="tab-btn" data-tab="statistics">บันทึกสถิติ</button>
+      <button class="tab-btn" data-tab="report">รายงานและกราฟ</button>
+      <button class="tab-btn" data-tab="backup">สำรองข้อมูล</button>
+    </nav>
+
+    <section id="students" class="tab-content active">
+      <div class="grid">
+        <div class="card form-card">
+          <h2 id="studentFormTitle">เพิ่มรายชื่อนักศึกษา</h2>
+          <form id="studentForm">
+            <input type="hidden" id="studentId" />
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="studentCode">รหัสนักศึกษา *</label>
+                <input id="studentCode" required placeholder="เช่น 670001" />
+              </div>
+              <div class="form-group">
+                <label for="studentName">ชื่อ-นามสกุล *</label>
+                <input id="studentName" required placeholder="ชื่อ-นามสกุล" />
+              </div>
+              <div class="form-group">
+                <label for="studentCohort">รุ่น *</label>
+                <input id="studentCohort" required placeholder="เช่น รุ่นที่ 1" />
+              </div>
+              <div class="form-group">
+                <label for="studentTerm">ภาคเรียน *</label>
+                <input id="studentTerm" required placeholder="เช่น 1/2569" />
+              </div>
+              <div class="form-group">
+                <label for="studentGender">เพศ *</label>
+                <select id="studentGender" required>
+                  <option value="ชาย">ชาย</option>
+                  <option value="หญิง">หญิง</option>
+                </select>
+              </div>
+              <div class="form-group full-width">
+                <label for="studentShift">รอบการเรียน *</label>
+                <select id="studentShift" required>
+                  <option value="รอบเช้า">รอบเช้า</option>
+                  <option value="รอบบ่าย">รอบบ่าย</option>
+                  <option value="รอบค่ำ">รอบค่ำ</option>
+                </select>
+              </div>
+            </div>
+            <div class="button-row">
+              <button type="submit">บันทึกรายชื่อ</button>
+              <button type="button" class="btn-secondary" onclick="resetStudentForm()">ล้างข้อมูล</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card table-card">
+          <h2>รายชื่อนักศึกษาที่บันทึกไว้</h2>
+          <p class="muted">เพิ่มเพศชาย/หญิงเพื่อใช้สรุปจำนวนแยกตามภาคเรียน</p>
+          <div class="form-group no-print" style="max-width:350px; margin-bottom:12px;">
+            <input id="studentSearch" placeholder="ค้นหาชื่อ รหัส เพศ รุ่น หรือภาคเรียน" oninput="renderStudents()" />
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ลำดับ</th>
+                  <th>รหัสนักศึกษา</th>
+                  <th>ชื่อ-นามสกุล</th>
+                  <th>เพศ</th>
+                  <th>รุ่น</th>
+                  <th>ภาคเรียน</th>
+                  <th>รอบเรียน</th>
+                  <th class="no-print">จัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="studentTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="statistics" class="tab-content">
+      <div class="grid">
+        <div class="card form-card">
+          <h2 id="statFormTitle">บันทึกข้อมูลสถิติ</h2>
+          <p class="muted">บันทึกจำนวนสถิติแยกตามรุ่น ภาคเรียน และรอบการเรียน</p>
+          <form id="statForm">
+            <input type="hidden" id="statId" />
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="statCohort">รุ่น *</label>
+                <input id="statCohort" list="cohortList" required placeholder="เช่น รุ่นที่ 1" />
+              </div>
+              <div class="form-group">
+                <label for="statTerm">ภาคเรียน *</label>
+                <input id="statTerm" list="termList" required placeholder="เช่น 1/2569" />
+              </div>
+              <div class="form-group full-width">
+                <label for="statShift">รอบการเรียน *</label>
+                <select id="statShift" required>
+                  <option value="รอบเช้า">รอบเช้า</option>
+                  <option value="รอบบ่าย">รอบบ่าย</option>
+                  <option value="รอบค่ำ">รอบค่ำ</option>
+                </select>
+              </div>
+              <div class="form-group full-width" style="border-top:1px dashed var(--border); padding-top:10px;">
+                <label>จำนวนสำเร็จการศึกษา (แยกชาย/หญิง) <span id="graduateTotalLabel" class="muted">รวม 0 คน</span></label>
+              </div>
+              <div class="form-group">
+                <label for="graduateMale">ชาย</label>
+                <input id="graduateMale" type="number" min="0" value="0" required oninput="updateStatTotals()" />
+              </div>
+              <div class="form-group">
+                <label for="graduateFemale">หญิง</label>
+                <input id="graduateFemale" type="number" min="0" value="0" required oninput="updateStatTotals()" />
+              </div>
+              <div class="form-group full-width" style="border-top:1px dashed var(--border); padding-top:10px;">
+                <label>จำนวนมีงานทำ (แยกชาย/หญิง) <span id="employedTotalLabel" class="muted">รวม 0 คน</span></label>
+              </div>
+              <div class="form-group">
+                <label for="employedMale">ชาย</label>
+                <input id="employedMale" type="number" min="0" value="0" required oninput="updateStatTotals()" />
+              </div>
+              <div class="form-group">
+                <label for="employedFemale">หญิง</label>
+                <input id="employedFemale" type="number" min="0" value="0" required oninput="updateStatTotals()" />
+              </div>
+              <div class="form-group full-width" style="border-top:1px dashed var(--border); padding-top:10px;">
+                <label>จำนวนนำความรู้ไปใช้ในชีวิตประจำวัน (แยกชาย/หญิง) <span id="dailyUseTotalLabel" class="muted">รวม 0 คน</span></label>
+              </div>
+              <div class="form-group">
+                <label for="dailyUseMale">ชาย</label>
+                <input id="dailyUseMale" type="number" min="0" value="0" required oninput="updateStatTotals()" />
+              </div>
+              <div class="form-group">
+                <label for="dailyUseFemale">หญิง</label>
+                <input id="dailyUseFemale" type="number" min="0" value="0" required oninput="updateStatTotals()" />
+              </div>
+            </div>
+            <div class="button-row">
+              <button type="submit" class="btn-success">บันทึกสถิติ</button>
+              <button type="button" class="btn-secondary" onclick="resetStatForm()">ล้างข้อมูล</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card table-card">
+          <h2>ข้อมูลสถิติที่บันทึกไว้</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th rowspan="2">ลำดับ</th>
+                  <th rowspan="2">รุ่น</th>
+                  <th rowspan="2">ภาคเรียน</th>
+                  <th rowspan="2">รอบเรียน</th>
+                  <th colspan="3">สำเร็จการศึกษา</th>
+                  <th colspan="3">มีงานทำ</th>
+                  <th colspan="3">ใช้ในชีวิตประจำวัน</th>
+                  <th rowspan="2" class="no-print">จัดการ</th>
+                </tr>
+                <tr>
+                  <th>ชาย</th><th>หญิง</th><th>รวม</th>
+                  <th>ชาย</th><th>หญิง</th><th>รวม</th>
+                  <th>ชาย</th><th>หญิง</th><th>รวม</th>
+                </tr>
+              </thead>
+              <tbody id="statTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <datalist id="cohortList"></datalist>
+      <datalist id="termList"></datalist>
+    </section>
+
+    <section id="report" class="tab-content">
+      <div class="card no-print">
+        <h2>ตัวกรองรายงาน</h2>
+        <div class="filter-row">
+          <div class="form-group">
+            <label for="filterCohort">รุ่น</label>
+            <select id="filterCohort" onchange="renderReport()"></select>
+          </div>
+          <div class="form-group">
+            <label for="filterTerm">ภาคเรียน</label>
+            <select id="filterTerm" onchange="renderReport()"></select>
+          </div>
+          <div class="form-group">
+            <label for="filterShift">รอบเรียน</label>
+            <select id="filterShift" onchange="renderReport()">
+              <option value="">ทุกรอบเรียน</option>
+              <option value="รอบเช้า">รอบเช้า</option>
+              <option value="รอบบ่าย">รอบบ่าย</option>
+              <option value="รอบค่ำ">รอบค่ำ</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <button onclick="printReport()">🖨️ พิมพ์รายงานนี้</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="printArea">
+        <div class="card" style="margin-top:18px;">
+          <h2>รายงานสรุปข้อมูลนักศึกษา</h2>
+          <p id="reportSubtitle" class="muted"></p>
+          <div class="summary-grid">
+            <div class="stat stat-blue">
+              <div class="label">จำนวนรายการสถิติ</div>
+              <div class="number" id="summaryRecords">0</div>
+            </div>
+            <div class="stat stat-purple">
+              <div class="label">สำเร็จการศึกษา</div>
+              <div class="number" id="summaryGraduates">0</div>
+            </div>
+            <div class="stat stat-green">
+              <div class="label">มีงานทำ</div>
+              <div class="number" id="summaryEmployed">0</div>
+            </div>
+            <div class="stat stat-orange">
+              <div class="label">ใช้ในชีวิตประจำวัน</div>
+              <div class="number" id="summaryDailyUse">0</div>
+            </div>
+            <div class="stat stat-male">
+              <div class="label">นักศึกษาชาย</div>
+              <div class="number" id="summaryMale">0</div>
+            </div>
+            <div class="stat stat-female">
+              <div class="label">นักศึกษาหญิง</div>
+              <div class="number" id="summaryFemale">0</div>
+            </div>
+          </div>
+
+          <h3 style="margin-top:6px;">สรุปผลลัพธ์แยกชาย/หญิง</h3>
+          <div class="summary-grid" style="grid-template-columns: repeat(3, 1fr);">
+            <div class="stat stat-purple">
+              <div class="label">สำเร็จการศึกษา (ชาย / หญิง)</div>
+              <div class="number"><span id="summaryGraduatesMale">0</span> / <span id="summaryGraduatesFemale">0</span></div>
+            </div>
+            <div class="stat stat-green">
+              <div class="label">มีงานทำ (ชาย / หญิง)</div>
+              <div class="number"><span id="summaryEmployedMale">0</span> / <span id="summaryEmployedFemale">0</span></div>
+            </div>
+            <div class="stat stat-orange">
+              <div class="label">ใช้ในชีวิตประจำวัน (ชาย / หญิง)</div>
+              <div class="number"><span id="summaryDailyUseMale">0</span> / <span id="summaryDailyUseFemale">0</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:18px;">
+          <h2>กราฟเปรียบเทียบผลลัพธ์</h2>
+          <div class="chart-box">
+            <svg id="chart" viewBox="0 0 900 350" preserveAspectRatio="none"></svg>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:18px;">
+          <h2>จำนวนชายและหญิงแยกตามภาคเรียน</h2>
+          <p class="muted">นับจากรายชื่อนักศึกษาที่บันทึกไว้ โดยใช้รุ่น ภาคเรียน และรอบเรียนตามตัวกรองด้านบน</p>
+          <div class="chart-box">
+            <svg id="genderChart" viewBox="0 0 900 350" preserveAspectRatio="none"></svg>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:18px;">
+          <h2>รายละเอียดชายและหญิงแยกตามภาคเรียน</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>รุ่น</th>
+                  <th>ภาคเรียน</th>
+                  <th>รอบเรียน</th>
+                  <th>ชาย</th>
+                  <th>หญิง</th>
+                  <th>รวม</th>
+                </tr>
+              </thead>
+              <tbody id="genderReportTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:18px;">
+          <h2>รายละเอียดสถิติผลลัพธ์แยกตามรุ่นและภาคเรียน (แยกชาย/หญิง)</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th rowspan="2">รุ่น</th>
+                  <th rowspan="2">ภาคเรียน</th>
+                  <th rowspan="2">รอบเรียน</th>
+                  <th colspan="3">สำเร็จการศึกษา</th>
+                  <th colspan="3">มีงานทำ</th>
+                  <th colspan="3">ใช้ในชีวิตประจำวัน</th>
+                </tr>
+                <tr>
+                  <th>ชาย</th><th>หญิง</th><th>รวม</th>
+                  <th>ชาย</th><th>หญิง</th><th>รวม</th>
+                  <th>ชาย</th><th>หญิง</th><th>รวม</th>
+                </tr>
+              </thead>
+              <tbody id="reportTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="backup" class="tab-content">
+      <div class="grid">
+        <div class="card full">
+          <h2>สำรองและนำเข้าข้อมูล</h2>
+          <p class="muted">ใช้สำหรับเก็บข้อมูลสำรองหรือย้ายข้อมูลไปยังเครื่องอื่น</p>
+          <div class="button-row no-print">
+            <button class="btn-success" onclick="exportData()">ดาวน์โหลดข้อมูลสำรอง JSON</button>
+            <label for="importFile" class="btn-secondary" style="display:inline-flex;align-items:center;cursor:pointer;">นำเข้าข้อมูล JSON</label>
+            <input id="importFile" type="file" accept=".json,application/json" style="display:none;" onchange="importData(event)" />
+            <button class="btn-danger" onclick="clearAllData()">ล้างข้อมูลทั้งหมด</button>
+          </div>
+          <p class="muted">ข้อควรระวัง: การล้างข้อมูลทั้งหมดไม่สามารถย้อนกลับได้ ควรสำรองข้อมูลก่อนทุกครั้ง</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="notice" class="notice"></div>
+
+  <script>
+    const STORAGE_STUDENTS = "student_management_students_v2";
+    const STORAGE_STATS = "student_management_stats_v1";
+
+    let students = loadData(STORAGE_STUDENTS);
+    let statistics = loadData(STORAGE_STATS);
+
+    function loadData(key) {
+      try {
+        const data = JSON.parse(localStorage.getItem(key));
+        return Array.isArray(data) ? data : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveData() {
+      localStorage.setItem(STORAGE_STUDENTS, JSON.stringify(students));
+      localStorage.setItem(STORAGE_STATS, JSON.stringify(statistics));
+    }
+
+    function createId() {
+      return `${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+      }[char]));
+    }
+
+    function showNotice(message, type = "success") {
+      const notice = document.getElementById("notice");
+      notice.textContent = message;
+      notice.className = `notice ${type}`;
+      notice.style.display = "block";
+      setTimeout(() => { notice.style.display = "none"; }, 3000);
+    }
+
+    document.querySelectorAll(".tab-btn").forEach(button => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+        document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
+        button.classList.add("active");
+        document.getElementById(button.dataset.tab).classList.add("active");
+        if (button.dataset.tab === "report") renderReport();
+      });
+    });
+
+    document.getElementById("studentForm").addEventListener("submit", event => {
+      event.preventDefault();
+
+      const id = document.getElementById("studentId").value;
+      const student = {
+        id: id || createId(),
+        code: document.getElementById("studentCode").value.trim(),
+        name: document.getElementById("studentName").value.trim(),
+        cohort: document.getElementById("studentCohort").value.trim(),
+        term: document.getElementById("studentTerm").value.trim(),
+        gender: document.getElementById("studentGender").value,
+        shift: document.getElementById("studentShift").value
+      };
+
+      if (!student.code || !student.name || !student.cohort || !student.term) {
+        showNotice("กรุณากรอกข้อมูลที่มีเครื่องหมาย * ให้ครบ", "error");
+        return;
+      }
+
+      const duplicate = students.some(item => item.code === student.code && item.id !== student.id);
+      if (duplicate) {
+        showNotice("รหัสนักศึกษานี้ถูกบันทึกไว้แล้ว", "error");
+        return;
+      }
+
+      const index = students.findIndex(item => item.id === student.id);
+      if (index >= 0) {
+        students[index] = student;
+        showNotice("แก้ไขข้อมูลนักศึกษาเรียบร้อยแล้ว");
+      } else {
+        students.push(student);
+        showNotice("บันทึกรายชื่อนักศึกษาเรียบร้อยแล้ว");
+      }
+
+      saveData();
+      resetStudentForm();
+      renderStudents();
+      updateDataLists();
+      updateFilters();
+    });
+
+    function normalizeStudent(student) {
+      return {
+        ...student,
+        gender: student.gender === "หญิง" ? "หญิง" : (student.gender === "ชาย" ? "ชาย" : "ไม่ระบุ")
+      };
+    }
+
+    function getNormalizedStudents() {
+      return students.map(normalizeStudent);
+    }
+
+    function renderStudents() {
+      const keyword = document.getElementById("studentSearch").value.trim().toLowerCase();
+      const body = document.getElementById("studentTableBody");
+      const filtered = getNormalizedStudents().filter(student =>
+        [student.code, student.name, student.gender, student.cohort, student.term, student.shift]
+          .join(" ").toLowerCase().includes(keyword)
+      );
+
+      if (!filtered.length) {
+        body.innerHTML = `<tr><td colspan="8" class="empty">ยังไม่มีข้อมูลรายชื่อนักศึกษา</td></tr>`;
+        return;
+      }
+
+      body.innerHTML = filtered.map((student, index) => `
+        <tr>
+          <td>${index + 1}</td>
+          <td>${escapeHtml(student.code)}</td>
+          <td>${escapeHtml(student.name)}</td>
+          <td>${student.gender === "ชาย"
+            ? '<span class="gender-badge gender-male">ชาย</span>'
+            : student.gender === "หญิง"
+              ? '<span class="gender-badge gender-female">หญิง</span>'
+              : '<span class="gender-badge gender-unknown">ไม่ระบุ</span>'}</td>
+          <td>${escapeHtml(student.cohort)}</td>
+          <td>${escapeHtml(student.term)}</td>
+          <td>${escapeHtml(student.shift)}</td>
+          <td class="no-print">
+            <button class="btn-warning btn-small" onclick="editStudent('${student.id}')">แก้ไข</button>
+            <button class="btn-danger btn-small" onclick="deleteStudent('${student.id}')">ลบ</button>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    function editStudent(id) {
+      const student = students.find(item => item.id === id);
+      if (!student) return;
+
+      document.getElementById("studentId").value = student.id;
+      document.getElementById("studentCode").value = student.code;
+      document.getElementById("studentName").value = student.name;
+      document.getElementById("studentCohort").value = student.cohort;
+      document.getElementById("studentTerm").value = student.term;
+      document.getElementById("studentGender").value = student.gender || "ชาย";
+      document.getElementById("studentShift").value = student.shift;
+      document.getElementById("studentFormTitle").textContent = "แก้ไขข้อมูลนักศึกษา";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function deleteStudent(id) {
+      if (!confirm("ต้องการลบรายชื่อนักศึกษารายการนี้ใช่หรือไม่?")) return;
+      students = students.filter(item => item.id !== id);
+      saveData();
+      renderStudents();
+      updateDataLists();
+      updateFilters();
+      showNotice("ลบรายชื่อนักศึกษาเรียบร้อยแล้ว");
+    }
+
+    function resetStudentForm() {
+      document.getElementById("studentForm").reset();
+      document.getElementById("studentId").value = "";
+      document.getElementById("studentFormTitle").textContent = "เพิ่มรายชื่อนักศึกษา";
+    }
+
+    function updateStatTotals() {
+      const gMale = Math.max(0, Number(document.getElementById("graduateMale").value) || 0);
+      const gFemale = Math.max(0, Number(document.getElementById("graduateFemale").value) || 0);
+      const eMale = Math.max(0, Number(document.getElementById("employedMale").value) || 0);
+      const eFemale = Math.max(0, Number(document.getElementById("employedFemale").value) || 0);
+      const dMale = Math.max(0, Number(document.getElementById("dailyUseMale").value) || 0);
+      const dFemale = Math.max(0, Number(document.getElementById("dailyUseFemale").value) || 0);
+
+      document.getElementById("graduateTotalLabel").textContent = `รวม ${gMale + gFemale} คน`;
+      document.getElementById("employedTotalLabel").textContent = `รวม ${eMale + eFemale} คน`;
+      document.getElementById("dailyUseTotalLabel").textContent = `รวม ${dMale + dFemale} คน`;
+    }
+
+    function normalizeStat(stat) {
+      const graduatesMale = Math.max(0, Number(stat.graduatesMale) || 0);
+      const graduatesFemale = Math.max(0, Number(stat.graduatesFemale) || 0);
+      const employedMale = Math.max(0, Number(stat.employedMale) || 0);
+      const employedFemale = Math.max(0, Number(stat.employedFemale) || 0);
+      const dailyUseMale = Math.max(0, Number(stat.dailyUseMale) || 0);
+      const dailyUseFemale = Math.max(0, Number(stat.dailyUseFemale) || 0);
+
+      const hasGenderSplit = ["graduatesMale", "graduatesFemale", "employedMale", "employedFemale", "dailyUseMale", "dailyUseFemale"]
+        .some(key => stat[key] !== undefined);
+
+      return {
+        ...stat,
+        graduatesMale,
+        graduatesFemale,
+        employedMale,
+        employedFemale,
+        dailyUseMale,
+        dailyUseFemale,
+        graduates: hasGenderSplit ? graduatesMale + graduatesFemale : Math.max(0, Number(stat.graduates) || 0),
+        employed: hasGenderSplit ? employedMale + employedFemale : Math.max(0, Number(stat.employed) || 0),
+        dailyUse: hasGenderSplit ? dailyUseMale + dailyUseFemale : Math.max(0, Number(stat.dailyUse) || 0)
+      };
+    }
+
+    function getNormalizedStatistics() {
+      return statistics.map(normalizeStat);
+    }
+
+    document.getElementById("statForm").addEventListener("submit", event => {
+      event.preventDefault();
+
+      const id = document.getElementById("statId").value;
+      const graduatesMale = Math.max(0, Number(document.getElementById("graduateMale").value) || 0);
+      const graduatesFemale = Math.max(0, Number(document.getElementById("graduateFemale").value) || 0);
+      const employedMale = Math.max(0, Number(document.getElementById("employedMale").value) || 0);
+      const employedFemale = Math.max(0, Number(document.getElementById("employedFemale").value) || 0);
+      const dailyUseMale = Math.max(0, Number(document.getElementById("dailyUseMale").value) || 0);
+      const dailyUseFemale = Math.max(0, Number(document.getElementById("dailyUseFemale").value) || 0);
+
+      const stat = {
+        id: id || createId(),
+        cohort: document.getElementById("statCohort").value.trim(),
+        term: document.getElementById("statTerm").value.trim(),
+        shift: document.getElementById("statShift").value,
+        graduatesMale, graduatesFemale,
+        employedMale, employedFemale,
+        dailyUseMale, dailyUseFemale,
+        graduates: graduatesMale + graduatesFemale,
+        employed: employedMale + employedFemale,
+        dailyUse: dailyUseMale + dailyUseFemale
+      };
+
+      if (!stat.cohort || !stat.term) {
+        showNotice("กรุณาระบุรุ่นและภาคเรียน", "error");
+        return;
+      }
+
+      const index = statistics.findIndex(item => item.id === stat.id);
+      if (index >= 0) {
+        statistics[index] = stat;
+        showNotice("แก้ไขข้อมูลสถิติเรียบร้อยแล้ว");
+      } else {
+        statistics.push(stat);
+        showNotice("บันทึกข้อมูลสถิติเรียบร้อยแล้ว");
+      }
+
+      saveData();
+      resetStatForm();
+      renderStatistics();
+      updateDataLists();
+      updateFilters();
+      renderReport();
+    });
+
+    function renderStatistics() {
+      const body = document.getElementById("statTableBody");
+      const normalized = getNormalizedStatistics();
+
+      if (!normalized.length) {
+        body.innerHTML = `<tr><td colspan="14" class="empty">ยังไม่มีข้อมูลสถิติ</td></tr>`;
+        return;
+      }
+
+      body.innerHTML = normalized.map((stat, index) => `
+        <tr>
+          <td>${index + 1}</td>
+          <td>${escapeHtml(stat.cohort)}</td>
+          <td>${escapeHtml(stat.term)}</td>
+          <td>${escapeHtml(stat.shift)}</td>
+          <td>${stat.graduatesMale.toLocaleString()}</td>
+          <td>${stat.graduatesFemale.toLocaleString()}</td>
+          <td><strong>${Number(stat.graduates).toLocaleString()}</strong></td>
+          <td>${stat.employedMale.toLocaleString()}</td>
+          <td>${stat.employedFemale.toLocaleString()}</td>
+          <td><strong>${Number(stat.employed).toLocaleString()}</strong></td>
+          <td>${stat.dailyUseMale.toLocaleString()}</td>
+          <td>${stat.dailyUseFemale.toLocaleString()}</td>
+          <td><strong>${Number(stat.dailyUse).toLocaleString()}</strong></td>
+          <td class="no-print">
+            <button class="btn-warning btn-small" onclick="editStat('${stat.id}')">แก้ไข</button>
+            <button class="btn-danger btn-small" onclick="deleteStat('${stat.id}')">ลบ</button>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    function editStat(id) {
+      const raw = statistics.find(item => item.id === id);
+      if (!raw) return;
+      const stat = normalizeStat(raw);
+
+      document.getElementById("statId").value = stat.id;
+      document.getElementById("statCohort").value = stat.cohort;
+      document.getElementById("statTerm").value = stat.term;
+      document.getElementById("statShift").value = stat.shift;
+      document.getElementById("graduateMale").value = stat.graduatesMale;
+      document.getElementById("graduateFemale").value = stat.graduatesFemale;
+      document.getElementById("employedMale").value = stat.employedMale;
+      document.getElementById("employedFemale").value = stat.employedFemale;
+      document.getElementById("dailyUseMale").value = stat.dailyUseMale;
+      document.getElementById("dailyUseFemale").value = stat.dailyUseFemale;
+      updateStatTotals();
+      document.getElementById("statFormTitle").textContent = "แก้ไขข้อมูลสถิติ";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function deleteStat(id) {
+      if (!confirm("ต้องการลบข้อมูลสถิติรายการนี้ใช่หรือไม่?")) return;
+      statistics = statistics.filter(item => item.id !== id);
+      saveData();
+      renderStatistics();
+      updateDataLists();
+      updateFilters();
+      renderReport();
+      showNotice("ลบข้อมูลสถิติเรียบร้อยแล้ว");
+    }
+
+    function resetStatForm() {
+      document.getElementById("statForm").reset();
+      document.getElementById("statId").value = "";
+      document.getElementById("graduateMale").value = 0;
+      document.getElementById("graduateFemale").value = 0;
+      document.getElementById("employedMale").value = 0;
+      document.getElementById("employedFemale").value = 0;
+      document.getElementById("dailyUseMale").value = 0;
+      document.getElementById("dailyUseFemale").value = 0;
+      updateStatTotals();
+      document.getElementById("statFormTitle").textContent = "บันทึกข้อมูลสถิติ";
+    }
+
+    function allCohorts() {
+      return [...new Set([...students, ...statistics].map(item => item.cohort).filter(Boolean))].sort();
+    }
+
+    function allTerms() {
+      return [...new Set([...students, ...statistics].map(item => item.term).filter(Boolean))].sort();
+    }
+
+    function updateDataLists() {
+      document.getElementById("cohortList").innerHTML = allCohorts()
+        .map(item => `<option value="${escapeHtml(item)}"></option>`).join("");
+      document.getElementById("termList").innerHTML = allTerms()
+        .map(item => `<option value="${escapeHtml(item)}"></option>`).join("");
+    }
+
+    function updateFilters() {
+      const cohortSelect = document.getElementById("filterCohort");
+      const termSelect = document.getElementById("filterTerm");
+      const oldCohort = cohortSelect.value;
+      const oldTerm = termSelect.value;
+
+      cohortSelect.innerHTML = `<option value="">ทุกรุ่น</option>` +
+        allCohorts().map(item => `<option value="${escapeHtml(item)}">${escapeHtml(item)}</option>`).join("");
+
+      termSelect.innerHTML = `<option value="">ทุกภาคเรียน</option>` +
+        allTerms().map(item => `<option value="${escapeHtml(item)}">${escapeHtml(item)}</option>`).join("");
+
+      if ([...cohortSelect.options].some(option => option.value === oldCohort)) cohortSelect.value = oldCohort;
+      if ([...termSelect.options].some(option => option.value === oldTerm)) termSelect.value = oldTerm;
+    }
+
+    function renderReport() {
+      const cohort = document.getElementById("filterCohort").value;
+      const term = document.getElementById("filterTerm").value;
+      const shift = document.getElementById("filterShift").value;
+
+      const filtered = getNormalizedStatistics().filter(stat =>
+        (!cohort || stat.cohort === cohort) &&
+        (!term || stat.term === term) &&
+        (!shift || stat.shift === shift)
+      );
+
+      const filteredStudents = getNormalizedStudents().filter(student =>
+        (!cohort || student.cohort === cohort) &&
+        (!term || student.term === term) &&
+        (!shift || student.shift === shift)
+      );
+
+      const totalGraduates = filtered.reduce((sum, stat) => sum + Number(stat.graduates || 0), 0);
+      const totalEmployed = filtered.reduce((sum, stat) => sum + Number(stat.employed || 0), 0);
+      const totalDailyUse = filtered.reduce((sum, stat) => sum + Number(stat.dailyUse || 0), 0);
+
+      const totalGraduatesMale = filtered.reduce((sum, stat) => sum + stat.graduatesMale, 0);
+      const totalGraduatesFemale = filtered.reduce((sum, stat) => sum + stat.graduatesFemale, 0);
+      const totalEmployedMale = filtered.reduce((sum, stat) => sum + stat.employedMale, 0);
+      const totalEmployedFemale = filtered.reduce((sum, stat) => sum + stat.employedFemale, 0);
+      const totalDailyUseMale = filtered.reduce((sum, stat) => sum + stat.dailyUseMale, 0);
+      const totalDailyUseFemale = filtered.reduce((sum, stat) => sum + stat.dailyUseFemale, 0);
+
+      const totalMale = filteredStudents.filter(student => student.gender === "ชาย").length;
+      const totalFemale = filteredStudents.filter(student => student.gender === "หญิง").length;
+
+      document.getElementById("summaryRecords").textContent = filtered.length.toLocaleString();
+      document.getElementById("summaryGraduates").textContent = totalGraduates.toLocaleString();
+      document.getElementById("summaryEmployed").textContent = totalEmployed.toLocaleString();
+      document.getElementById("summaryDailyUse").textContent = totalDailyUse.toLocaleString();
+      document.getElementById("summaryMale").textContent = totalMale.toLocaleString();
+      document.getElementById("summaryFemale").textContent = totalFemale.toLocaleString();
+
+      document.getElementById("summaryGraduatesMale").textContent = totalGraduatesMale.toLocaleString();
+      document.getElementById("summaryGraduatesFemale").textContent = totalGraduatesFemale.toLocaleString();
+      document.getElementById("summaryEmployedMale").textContent = totalEmployedMale.toLocaleString();
+      document.getElementById("summaryEmployedFemale").textContent = totalEmployedFemale.toLocaleString();
+      document.getElementById("summaryDailyUseMale").textContent = totalDailyUseMale.toLocaleString();
+      document.getElementById("summaryDailyUseFemale").textContent = totalDailyUseFemale.toLocaleString();
+
+      const subtitleParts = [
+        cohort ? `รุ่น: ${cohort}` : "ทุกรุ่น",
+        term ? `ภาคเรียน: ${term}` : "ทุกภาคเรียน",
+        shift ? shift : "ทุกรอบเรียน"
+      ];
+      document.getElementById("reportSubtitle").textContent = subtitleParts.join(" | ");
+
+      const body = document.getElementById("reportTableBody");
+      if (!filtered.length) {
+        body.innerHTML = `<tr><td colspan="12" class="empty">ไม่พบข้อมูลตามตัวกรองที่เลือก</td></tr>`;
+      } else {
+        body.innerHTML = filtered.map(stat => `
+          <tr>
+            <td>${escapeHtml(stat.cohort)}</td>
+            <td>${escapeHtml(stat.term)}</td>
+            <td>${escapeHtml(stat.shift)}</td>
+            <td>${stat.graduatesMale.toLocaleString()}</td>
+            <td>${stat.graduatesFemale.toLocaleString()}</td>
+            <td><strong>${Number(stat.graduates).toLocaleString()}</strong></td>
+            <td>${stat.employedMale.toLocaleString()}</td>
+            <td>${stat.employedFemale.toLocaleString()}</td>
+            <td><strong>${Number(stat.employed).toLocaleString()}</strong></td>
+            <td>${stat.dailyUseMale.toLocaleString()}</td>
+            <td>${stat.dailyUseFemale.toLocaleString()}</td>
+            <td><strong>${Number(stat.dailyUse).toLocaleString()}</strong></td>
+          </tr>
+        `).join("");
+      }
+
+      const genderRows = buildGenderRows(filteredStudents);
+      const genderBody = document.getElementById("genderReportTableBody");
+
+      if (!genderRows.length) {
+        genderBody.innerHTML = `<tr><td colspan="6" class="empty">ยังไม่มีข้อมูลรายชื่อนักศึกษาสำหรับแสดงเพศแยกตามภาคเรียน</td></tr>`;
+      } else {
+        genderBody.innerHTML = genderRows.map(row => `
+          <tr>
+            <td>${escapeHtml(row.cohort)}</td>
+            <td>${escapeHtml(row.term)}</td>
+            <td>${escapeHtml(row.shift)}</td>
+            <td><strong>${row.male.toLocaleString()}</strong></td>
+            <td><strong>${row.female.toLocaleString()}</strong></td>
+            <td><strong>${row.total.toLocaleString()}</strong></td>
+          </tr>
+        `).join("");
+      }
+
+      drawChart(filtered);
+      drawGenderChart(genderRows);
+    }
+
+    function buildGenderRows(data) {
+      const map = new Map();
+
+      data.forEach(student => {
+        const key = [student.cohort || "", student.term || "", student.shift || ""].join("||");
+        if (!map.has(key)) {
+          map.set(key, {
+            cohort: student.cohort || "",
+            term: student.term || "",
+            shift: student.shift || "",
+            male: 0,
+            female: 0
+          });
+        }
+
+        const row = map.get(key);
+        if (student.gender === "ชาย") row.male++;
+        if (student.gender === "หญิง") row.female++;
+      });
+
+      return [...map.values()]
+        .map(row => ({ ...row, total: row.male + row.female }))
+        .sort((a, b) =>
+          `${a.term}|${a.cohort}|${a.shift}`.localeCompare(`${b.term}|${b.cohort}|${b.shift}`, "th")
+        );
+    }
+
+    function drawGenderChart(rows) {
+      const svg = document.getElementById("genderChart");
+      const width = 900;
+      const height = 350;
+      const margin = { top: 45, right: 25, bottom: 90, left: 55 };
+      const graphWidth = width - margin.left - margin.right;
+      const graphHeight = height - margin.top - margin.bottom;
+
+      if (!rows.length) {
+        svg.innerHTML = `
+          <rect width="${width}" height="${height}" fill="#ffffff"></rect>
+          <text x="${width / 2}" y="${height / 2}" text-anchor="middle" fill="#667085" font-size="18">
+            ยังไม่มีข้อมูลเพศสำหรับแสดงกราฟ
+          </text>
+        `;
+        return;
+      }
+
+      const maxValue = Math.max(...rows.flatMap(row => [row.male, row.female]), 1);
+      const roundedMax = Math.max(1, Math.ceil(maxValue / 5) * 5);
+      const groupWidth = graphWidth / rows.length;
+      const barWidth = Math.min(34, Math.max(16, groupWidth / 3.5));
+
+      let content = `<rect width="${width}" height="${height}" fill="#ffffff"></rect>`;
+      content += `<text x="${width / 2}" y="22" text-anchor="middle" fill="#1d2939" font-size="16" font-weight="bold">จำนวนชายและหญิงแยกตามภาคเรียน</text>`;
+
+      for (let i = 0; i <= 5; i++) {
+        const value = (roundedMax / 5) * i;
+        const y = margin.top + graphHeight - (value / roundedMax) * graphHeight;
+        content += `<line x1="${margin.left}" y1="${y}" x2="${width - margin.right}" y2="${y}" stroke="#d9e2ec" stroke-width="1"></line>`;
+        content += `<text x="${margin.left - 8}" y="${y + 4}" text-anchor="end" fill="#667085" font-size="11">${Math.round(value)}</text>`;
+      }
+
+      rows.forEach((row, index) => {
+        const values = [row.male, row.female];
+        const labels = ["ชาย", "หญิง"];
+        const fills = ["#2563eb", "#db2777"];
+        const baseX = margin.left + index * groupWidth + (groupWidth - (barWidth * 2 + 6)) / 2;
+
+        values.forEach((value, valueIndex) => {
+          const barHeight = (value / roundedMax) * graphHeight;
+          const x = baseX + valueIndex * (barWidth + 6);
+          const y = margin.top + graphHeight - barHeight;
+
+          content += `<rect x="${x}" y="${y}" width="${barWidth}" height="${barHeight}" rx="4" fill="${fills[valueIndex]}"></rect>`;
+          content += `<text x="${x + barWidth / 2}" y="${Math.max(y - 6, margin.top + 12)}" text-anchor="middle" fill="#344054" font-size="11">${value}</text>`;
+        });
+
+        const label = `${row.cohort} | ${row.term} | ${row.shift}`;
+        const labelX = margin.left + index * groupWidth + groupWidth / 2;
+        content += `<text x="${labelX}" y="${height - 42}" text-anchor="end" transform="rotate(-35 ${labelX} ${height - 42})" fill="#475467" font-size="11">${escapeHtml(label)}</text>`;
+      });
+
+      const legendX = width - 210;
+      ["ชาย", "หญิง"].forEach((label, index) => {
+        const x = legendX + index * 85;
+        const fill = index === 0 ? "#2563eb" : "#db2777";
+        content += `<rect x="${x}" y="29" width="12" height="12" rx="2" fill="${fill}"></rect>`;
+        content += `<text x="${x + 17}" y="40" fill="#475467" font-size="11">${label}</text>`;
+      });
+
+      content += `<line x1="${margin.left}" y1="${margin.top + graphHeight}" x2="${width - margin.right}" y2="${margin.top + graphHeight}" stroke="#98a2b3" stroke-width="1.5"></line>`;
+      content += `<line x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${margin.top + graphHeight}" stroke="#98a2b3" stroke-width="1.5"></line>`;
+
+      svg.innerHTML = content;
+    }
+
+    function drawChart(data) {
+      const svg = document.getElementById("chart");
+      const width = 900;
+      const height = 350;
+      const margin = { top: 35, right: 25, bottom: 85, left: 55 };
+      const graphWidth = width - margin.left - margin.right;
+      const graphHeight = height - margin.top - margin.bottom;
+
+      if (!data.length) {
+        svg.innerHTML = `
+          <rect width="${width}" height="${height}" fill="#ffffff"></rect>
+          <text x="${width / 2}" y="${height / 2}" text-anchor="middle" fill="#667085" font-size="18">
+            ยังไม่มีข้อมูลสำหรับแสดงกราฟ
+          </text>
+        `;
+        return;
+      }
+
+      const maxValue = Math.max(...data.flatMap(item => [
+        Number(item.graduates || 0),
+        Number(item.employed || 0),
+        Number(item.dailyUse || 0)
+      ]), 1);
+
+      const roundedMax = Math.ceil(maxValue / 10) * 10 || 10;
+      const groupWidth = graphWidth / data.length;
+      const barWidth = Math.min(28, groupWidth / 4);
+      const colors = ["#7c5ac2", "#198754", "#f0a500"];
+      const labels = ["สำเร็จการศึกษา", "มีงานทำ", "ใช้ในชีวิตประจำวัน"];
+
+      let content = `<rect width="${width}" height="${height}" fill="#ffffff"></rect>`;
+      content += `<text x="${width / 2}" y="22" text-anchor="middle" fill="#1d2939" font-size="16" font-weight="bold">เปรียบเทียบจำนวนผู้สำเร็จการศึกษา ผู้มีงานทำ และผู้ใช้ความรู้ในชีวิตประจำวัน</text>`;
+
+      for (let i = 0; i <= 5; i++) {
+        const value = (roundedMax / 5) * i;
+        const y = margin.top + graphHeight - (value / roundedMax) * graphHeight;
+        content += `<line x1="${margin.left}" y1="${y}" x2="${width - margin.right}" y2="${y}" stroke="#d9e2ec" stroke-width="1"></line>`;
+        content += `<text x="${margin.left - 8}" y="${y + 4}" text-anchor="end" fill="#667085" font-size="11">${Math.round(value)}</text>`;
+      }
+
+      data.forEach((item, index) => {
+        const values = [Number(item.graduates || 0), Number(item.employed || 0), Number(item.dailyUse || 0)];
+        const baseX = margin.left + index * groupWidth + (groupWidth - (barWidth * 3 + 8)) / 2;
+
+        values.forEach((value, valueIndex) => {
+          const barHeight = (value / roundedMax) * graphHeight;
+          const x = baseX + valueIndex * (barWidth + 4);
+          const y = margin.top + graphHeight - barHeight;
+          content += `<rect x="${x}" y="${y}" width="${barWidth}" height="${barHeight}" rx="3" fill="${colors[valueIndex]}"></rect>`;
+          content += `<text x="${x + barWidth / 2}" y="${Math.max(y - 5, margin.top + 10)}" text-anchor="middle" fill="#344054" font-size="10">${value}</text>`;
+        });
+
+        const label = `${item.cohort} | ${item.term} | ${item.shift}`;
+        const labelX = margin.left + index * groupWidth + groupWidth / 2;
+        content += `<text x="${labelX}" y="${height - 45}" text-anchor="end" transform="rotate(-35 ${labelX} ${height - 45})" fill="#475467" font-size="11">${escapeHtml(label)}</text>`;
+      });
+
+      const legendX = width - 315;
+      labels.forEach((label, index) => {
+        const x = legendX + (index * 105);
+        content += `<rect x="${x}" y="29" width="12" height="12" rx="2" fill="${colors[index]}"></rect>`;
+        content += `<text x="${x + 17}" y="40" fill="#475467" font-size="11">${label}</text>`;
+      });
+
+      content += `<line x1="${margin.left}" y1="${margin.top + graphHeight}" x2="${width - margin.right}" y2="${margin.top + graphHeight}" stroke="#98a2b3" stroke-width="1.5"></line>`;
+      content += `<line x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${margin.top + graphHeight}" stroke="#98a2b3" stroke-width="1.5"></line>`;
+
+      svg.innerHTML = content;
+    }
+
+    function printReport() {
+      document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+      document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
+      document.querySelector('[data-tab="report"]').classList.add("active");
+      document.getElementById("report").classList.add("active");
+      renderReport();
+      setTimeout(() => window.print(), 150);
+    }
+
+    function exportData() {
+      const backup = {
+        appName: "ระบบบันทึกข้อมูลนักศึกษา",
+        exportedAt: new Date().toISOString(),
+        students,
+        statistics
+      };
+
+      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `student-data-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      showNotice("ดาวน์โหลดไฟล์สำรองข้อมูลเรียบร้อยแล้ว");
+    }
+
+    function importData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = loadEvent => {
+        try {
+          const backup = JSON.parse(loadEvent.target.result);
+          if (!Array.isArray(backup.students) || !Array.isArray(backup.statistics)) {
+            throw new Error("รูปแบบข้อมูลไม่ถูกต้อง");
+          }
+
+          if (!confirm("การนำเข้าจะเขียนทับข้อมูลปัจจุบันทั้งหมด ต้องการดำเนินการต่อหรือไม่?")) return;
+
+          students = backup.students.map(item => ({
+            ...item,
+            gender: item.gender === "หญิง" ? "หญิง" : (item.gender === "ชาย" ? "ชาย" : "ไม่ระบุ")
+          }));
+          statistics = backup.statistics;
+          saveData();
+          renderAll();
+          showNotice("นำเข้าข้อมูลเรียบร้อยแล้ว");
+        } catch {
+          showNotice("ไม่สามารถอ่านไฟล์ได้ กรุณาเลือกไฟล์สำรอง JSON ที่ถูกต้อง", "error");
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = "";
+    }
+
+    function clearAllData() {
+      if (!confirm("ยืนยันการล้างข้อมูลทั้งหมด? การดำเนินการนี้ไม่สามารถย้อนกลับได้")) return;
+      if (!confirm("ยืนยันอีกครั้ง: ต้องการลบรายชื่อนักศึกษาและข้อมูลสถิติทั้งหมดจริงหรือไม่?")) return;
+
+      students = [];
+      statistics = [];
+      saveData();
+      resetStudentForm();
+      resetStatForm();
+      renderAll();
+      showNotice("ล้างข้อมูลทั้งหมดเรียบร้อยแล้ว");
+    }
+
+    function renderAll() {
+      renderStudents();
+      renderStatistics();
+      updateDataLists();
+      updateFilters();
+      renderReport();
+    }
+
+    renderAll();
+  </script>
+</body>
+</html>
